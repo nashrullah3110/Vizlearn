@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Learning: Object Recognition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto Mono', monospace; /* Monospace font for the entire app */
+            background-color: #111827;
+            color: #f3f4f6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .panel {
+             background-color: #1f2937;
+             border: 1px solid #374151;
+        }
+        #nn-visualization {
+            background-color: rgba(31, 41, 55, 0.5);
+            border: 1px solid #374151;
+            backdrop-filter: blur(5px);
+            min-height: 500px;
+        }
+        #nn-svg {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+            touch-action: none;
+        }
+        .nn-neuron {
+            transition: fill 0.3s ease, r 0.3s ease, stroke-width 0.3s ease, stroke 0.3s ease;
+        }
+        .input-neuron {
+             fill: #374151;
+             transition: fill 0.1s;
+        }
+        .nn-path {
+            stroke: #374151;
+            stroke-width: 0.05; /* Even thinner for full connectivity */
+            fill: none;
+        }
+        .data-particle {
+            fill: #f472b6;
+            r: 1.2;
+            visibility: hidden; /* Start hidden */
+        }
+        .output-neuron-svg.active {
+            fill: #a78bfa;
+            stroke: #c4b5fd;
+            stroke-width: 2px;
+            r: 10; 
+        }
+        .output-neuron-label {
+            font-size: 5px; /* Adjust font size for longer labels */
+        }
+        .output-neuron-label.active{
+            fill: white;
+            font-weight: 700;
+        }
+        .loader {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #FFF;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .footer {
+            background-color: #1f2937;
+            border-top: 1px solid #374151;
+        }
+        .footer-icon {
+            transition: color 0.2s ease-in-out;
+            color: #9ca3af;
+        }
+        .footer-icon:hover {
+            color: #a78bfa;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <div class="w-full max-w-screen-xl mx-auto flex flex-col items-center flex-1 py-6 px-4">
+        <header class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-[#a78bfa]">Interactive Neural Network</h1>
+            <p class="text-gray-400">Draw a simple object directly on the input neurons.</p>
+        </header>
+
+        <main class="w-full flex flex-col gap-6 items-center flex-grow">
+            
+            <!-- Main Visualization Canvas -->
+            <div id="nn-visualization" class="w-full p-4 rounded-xl">
+                 <svg id="nn-svg" viewBox="0 0 380 200" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                 </svg>
+            </div>
+            
+            <!-- Controls -->
+            <div class="w-full max-w-md panel p-4 rounded-xl grid grid-cols-2 gap-4">
+                 <button id="recognizeBtn" class="w-full bg-purple-700 hover:bg-purple-600 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                    <i class="fas fa-brain"></i>
+                    <span>Recognize</span>
+                </button>
+                <button id="clearBtn" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                    Clear
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <footer class="footer w-full py-8 mt-auto">
+        <div class="container mx-auto px-6 text-center text-gray-400">
+            <div class="flex justify-center items-center space-x-6 mb-4">
+                 <a href="https://www.linkedin.com/in/ashish-jangra/" target="_blank" rel="noopener noreferrer" class="footer-icon">
+                    <i class="fab fa-linkedin fa-2x"></i>
+                </a>
+                <a href="https://github.com/AshishJangra27" target="_blank" rel="noopener noreferrer" class="footer-icon">
+                    <i class="fab fa-github fa-2x"></i>
+                </a>
+                 <a href="https://www.kaggle.com/ashishjangra27" target="_blank" rel="noopener noreferrer" class="footer-icon">
+                    <i class="fab fa-kaggle fa-2x"></i>
+                </a>
+                <a href="https://huggingface.co/ashish-jangra" target="_blank" rel="noopener noreferrer" class="footer-icon">
+                     <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="inline-block">
+                        <path d="M20.24,12.2a8.24,8.24,0,1,1-16.48,0a8.24,8.24,0,0,1,16.48,0Z"></path>
+                        <path d="M15.42,16.2c.18-.42.24-.84.18-1.26a4.55,4.55,0,0,0-.54-1.5,4.55,4.55,0,0,0-1.5-.54c-.42-.06-.84.06-1.26.18a4.55,4.55,0,0,0-1.5.54,4.55,4.55,0,0,0-.54,1.5c-.06.42.06.84.18,1.26a4.55,4.55,0,0,0,.54,1.5,4.55,4.55,0,0,0,1.5.54c.42.06.84,0,1.26-.18a4.55,4.55,0,0,0,1.5-.54,4.55,4.55,0,0,0,.54-1.5Z" fill="#111827"></path>
+                        <path d="M10.26,10.26a1.44,1.44,0,1,1-2.88,0,1.44,1.44,0,0,1,2.88,0" fill="#111827"></path>
+                        <path d="M16.62,10.26a1.44,1.44,0,1,1-2.88,0,1.44,1.44,0,0,1,2.88,0" fill="#111827"></path>
+                    </svg>
+                </a>
+                 <a href="https://www.instagram.com/ashish_zangra/" target="_blank" rel="noopener noreferrer" class="footer-icon">
+                    <i class="fab fa-instagram fa-2x"></i>
+                </a>
+            </div>
+            <p>&copy; 2024 vizlearn. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Configuration ---
+            const GRID_SIZE = 28;
+            const DRAWING_COLOR = { r: 255, g: 255, b: 255 };
+            const DEFAULT_BG_COLOR = { r: 0, g: 0, b: 0 }; 
+            const OBJECT_CATEGORIES = ['Car', 'Tree', 'House', 'Sun', 'Cloud', 'Star', 'Boat'];
+
+            // --- DOM Elements ---
+            const clearBtn = document.getElementById('clearBtn');
+            const recognizeBtn = document.getElementById('recognizeBtn');
+            const nnSvg = document.getElementById('nn-svg');
+
+            // --- State ---
+            let isDrawing = false;
+            let grid = [];
+            let nnInputNeurons = [];
+            let inputGroup;
+            let pathAndParticleContainer;
+            
+            // --- Initialization ---
+            function initialize() {
+                buildNnVisualization();
+                clearAll();
+
+                // Drawing event listeners on the input group
+                nnSvg.addEventListener('mousedown', (e) => { isDrawing = true; draw(e); });
+                nnSvg.addEventListener('mousemove', (e) => { if (isDrawing) draw(e); });
+                nnSvg.addEventListener('mouseup', () => { isDrawing = false; });
+                nnSvg.addEventListener('mouseleave', () => { isDrawing = false; });
+                
+                nnSvg.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; draw(e); });
+                nnSvg.addEventListener('touchmove', (e) => { e.preventDefault(); if (isDrawing) draw(e); });
+                nnSvg.addEventListener('touchend', () => { isDrawing = false; });
+            }
+
+            function buildNnVisualization() {
+                nnSvg.innerHTML = ''; // Clear previous
+                // Adjusted positions to give output labels more space
+                const layerDefs = {
+                    h1: { count: 128, x: 119 },
+                    h2: { count: 64,  x: 158 },
+                    h3: { count: 32,  x: 197 },
+                    h4: { count: 16,  x: 236 },
+                    h5: { count: 12,  x: 275 },
+                    output: { count: OBJECT_CATEGORIES.length, x: 315 }
+                };
+                let allNeurons = {};
+                pathAndParticleContainer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                nnSvg.appendChild(pathAndParticleContainer);
+
+
+                // --- Create Input Grid (784 neurons) ---
+                const inputGridSize = 70;
+                const inputNeuronSize = inputGridSize / GRID_SIZE;
+                inputGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                inputGroup.setAttribute('transform', `translate(10, ${100 - inputGridSize / 2})`);
+                
+                const borderRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                borderRect.setAttribute('x', -2);
+                borderRect.setAttribute('y', -2);
+                borderRect.setAttribute('width', inputGridSize + 4);
+                borderRect.setAttribute('height', inputGridSize + 4);
+                borderRect.setAttribute('rx', 3);
+                borderRect.setAttribute('fill', 'none');
+                borderRect.setAttribute('stroke', '#a78bfa');
+                borderRect.setAttribute('stroke-width', 0.5);
+                inputGroup.appendChild(borderRect);
+
+                nnInputNeurons = [];
+                for (let y = 0; y < GRID_SIZE; y++) {
+                    nnInputNeurons[y] = [];
+                    for (let x = 0; x < GRID_SIZE; x++) {
+                        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                        rect.setAttribute('x', x * inputNeuronSize);
+                        rect.setAttribute('y', y * inputNeuronSize);
+                        rect.setAttribute('width', inputNeuronSize);
+                        rect.setAttribute('height', inputNeuronSize);
+                        rect.classList.add('input-neuron');
+                        inputGroup.appendChild(rect);
+                        nnInputNeurons[y][x] = rect;
+                    }
+                }
+                
+                // --- Create Hidden and Output Layers ---
+                ['h1', 'h2', 'h3', 'h4', 'h5', 'output'].forEach(layerKey => {
+                    const layer = layerDefs[layerKey];
+                    allNeurons[layerKey] = [];
+                    const ySpacing = 200 / (layer.count + 1);
+                    for (let i = 0; i < layer.count; i++) {
+                        const neuronGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                        const neuron = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                        const cx = layer.x;
+                        const cy = ySpacing * (i + 1);
+                        let r = 1; // Smaller radius for dense layers
+                        if (layerKey === 'h4') r = 1.5;
+                        if (layerKey === 'h5') r = 2;
+                        if (layerKey === 'output') r = 6;
+                        
+                        neuron.setAttribute('cx', cx);
+                        neuron.setAttribute('cy', cy);
+                        neuron.setAttribute('r', r);
+                        neuron.setAttribute('fill', '#60a5fa');
+                        neuron.classList.add('nn-neuron');
+                         if(layerKey === 'output') {
+                            neuron.classList.add('output-neuron-svg');
+                            neuron.setAttribute('fill', '#4b5563');
+                            neuron.id = `output-svg-${i}`;
+                            
+                            const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                            label.setAttribute('x', cx + 15); // Position label further to the right
+                            label.setAttribute('y', cy);
+                            label.setAttribute('dy', '0.35em');
+                            label.setAttribute('text-anchor', 'start'); // Align text to the start (left)
+                            label.setAttribute('fill', '#9ca3af');
+                            label.classList.add('output-neuron-label');
+                            label.id = `output-label-${i}`;
+                            label.textContent = OBJECT_CATEGORIES[i]; // Use object category name
+                            neuronGroup.appendChild(label);
+                         }
+                        neuronGroup.prepend(neuron);
+                        allNeurons[layerKey].push(neuronGroup);
+                    }
+                });
+
+                // --- Create Full Connections ---
+                const createFullConnections = (startLayer, endLayer) => {
+                    startLayer.forEach(startNeuron => {
+                        const startCircle = startNeuron.querySelector('circle');
+                        endLayer.forEach(endNeuron => {
+                           const endCircle = endNeuron.querySelector('circle');
+                           createPath(startCircle.cx.baseVal.value, startCircle.cy.baseVal.value, endCircle.cx.baseVal.value, endCircle.cy.baseVal.value);
+                        });
+                    });
+                }
+                
+                nnSvg.appendChild(inputGroup);
+                Object.values(allNeurons).forEach(layer => layer.forEach(neuronGroup => nnSvg.appendChild(neuronGroup)));
+
+                createFullConnections(allNeurons.h1, allNeurons.h2);
+                createFullConnections(allNeurons.h2, allNeurons.h3);
+                createFullConnections(allNeurons.h3, allNeurons.h4);
+                createFullConnections(allNeurons.h4, allNeurons.h5);
+                createFullConnections(allNeurons.h5, allNeurons.output);
+            }
+
+            function createPath(x1, y1, x2, y2) {
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute('d', `M${x1},${y1} L${x2},${y2}`);
+                path.classList.add('nn-path');
+                pathAndParticleContainer.appendChild(path);
+            }
+
+            function createParticleAnimation(x1, y1, x2, y2, delay) {
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute('d', `M${x1},${y1} L${x2},${y2}`);
+                path.id = `p-path-${Math.random().toString(36).substr(2, 9)}`;
+                
+                const particle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                particle.classList.add('data-particle');
+
+                const anim = document.createElementNS("http://www.w3.org/2000/svg", "animateMotion");
+                anim.setAttribute('dur', `1.5s`);
+                anim.setAttribute('begin', 'indefinite');
+                anim.setAttribute('fill', 'freeze');
+                anim.setAttribute('calcMode', 'linear');
+                anim.appendChild(document.createElementNS("http://www.w3.org/2000/svg", "mpath")).setAttributeNS("http://www.w3.org/1999/xlink", 'href', `#${path.id}`);
+                particle.appendChild(anim);
+
+                const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                g.appendChild(path);
+                g.appendChild(particle);
+                pathAndParticleContainer.appendChild(g);
+
+                setTimeout(() => {
+                    particle.style.visibility = 'visible';
+                    anim.beginElement();
+                }, delay);
+
+                setTimeout(() => g.remove(), delay + 2000);
+            }
+            
+            function clearAll() {
+                grid = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill().map(() => ({...DEFAULT_BG_COLOR})));
+                clearVisualizations();
+                updateInputLayerVisuals();
+            }
+            
+            function clearVisualizations() {
+                for (let i = 0; i < OBJECT_CATEGORIES.length; i++) {
+                    document.getElementById(`output-svg-${i}`)?.classList.remove('active');
+                    document.getElementById(`output-label-${i}`)?.classList.remove('active');
+                }
+                const existingParticles = document.querySelectorAll('.data-particle-group');
+                existingParticles.forEach(p => p.remove());
+            }
+            
+            function updateInputLayerVisuals() {
+                if(nnInputNeurons.length === 0) return;
+                for (let y = 0; y < GRID_SIZE; y++) {
+                    for (let x = 0; x < GRID_SIZE; x++) {
+                        const pixel = grid[y][x];
+                        const neuron = nnInputNeurons[y][x];
+                        if (pixel.r > 0) {
+                            neuron.style.fill = `rgb(${pixel.r}, ${pixel.g}, ${pixel.b})`;
+                        } else {
+                            neuron.style.fill = '#374151';
+                        }
+                    }
+                }
+            }
+            
+            function draw(event) {
+                const svgPoint = nnSvg.createSVGPoint();
+                svgPoint.x = event.touches ? event.touches[0].clientX : event.clientX;
+                svgPoint.y = event.touches ? event.touches[0].clientY : event.clientY;
+
+                // Transform the screen point to the SVG coordinate system of the input group
+                const transformedPoint = svgPoint.matrixTransform(inputGroup.getScreenCTM().inverse());
+                
+                const inputGridSize = 70; // This must match the visual size in buildNnVisualization
+                const inputNeuronSize = inputGridSize / GRID_SIZE;
+                const gridX = Math.floor(transformedPoint.x / inputNeuronSize);
+                const gridY = Math.floor(transformedPoint.y / inputNeuronSize);
+                
+                const brushSize = 3; 
+                const brushOffset = Math.floor(brushSize / 2);
+
+                for(let i = 0; i < brushSize; i++) {
+                    for(let j = 0; j < brushSize; j++) {
+                       const y = gridY + i - brushOffset;
+                       const x = gridX + j - brushOffset;
+                       if(y >= 0 && y < GRID_SIZE && x >= 0 && x < GRID_SIZE) {
+                           grid[y][x] = {...DRAWING_COLOR};
+                       }
+                    }
+                }
+                updateInputLayerVisuals();
+            }
+
+            function getCanvasDataUrl() {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = GRID_SIZE;
+                tempCanvas.height = GRID_SIZE;
+                const tempCtx = tempCanvas.getContext('2d');
+                const imageData = tempCtx.createImageData(GRID_SIZE, GRID_SIZE);
+                for(let y=0; y < GRID_SIZE; y++) {
+                    for(let x=0; x < GRID_SIZE; x++) {
+                        const i = (y * GRID_SIZE + x) * 4;
+                        imageData.data[i] = grid[y][x].r;
+                        imageData.data[i+1] = grid[y][x].g;
+                        imageData.data[i+2] = grid[y][x].b;
+                        imageData.data[i+3] = 255;
+                    }
+                }
+                tempCtx.putImageData(imageData, 0, 0);
+                return tempCanvas.toDataURL('image/png');
+            }
+
+            async function recognizeAndVisualize() {
+                clearVisualizations();
+                const buttonContent = recognizeBtn.querySelector('span');
+                const buttonIcon = recognizeBtn.querySelector('i');
+                recognizeBtn.disabled = true;
+                buttonIcon.style.display = 'none';
+                const loader = document.createElement('div');
+                loader.className = 'loader';
+                recognizeBtn.prepend(loader);
+                buttonContent.textContent = 'Analyzing...';
+                
+                visualizeNnProcessing();
+
+                try {
+                    const dataUrl = getCanvasDataUrl();
+                    const base64ImageData = dataUrl.replace(/^data:image\/(png|jpeg);base64,/, "");
+                    const prompt = `Analyze this drawing of a simple object. Which of the following categories does it best represent: ${OBJECT_CATEGORIES.join(", ")}? Respond with only the name of the category. If it's ambiguous or doesn't match any category, respond with '?'.`;
+                    const payload = {
+                        contents: [{ role: "user", parts: [{ text: prompt }, { inlineData: { mimeType: "image/png", data: base64ImageData } }] }],
+                    };
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+                    const result = await response.json();
+                    
+                    let finalPrediction = '?';
+                    if (result.candidates && result.candidates[0]) {
+                        const text = result.candidates[0].content.parts[0].text.trim();
+                        // Check if the response is one of the valid categories
+                        if (OBJECT_CATEGORIES.includes(text)) {
+                           finalPrediction = text;
+                        }
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 3000)); // Wait for animation to progress
+                    visualizePrediction(finalPrediction);
+
+                } catch (error)
+                 {
+                    console.error("Recognition failed:", error);
+                    visualizePrediction('Error');
+                } finally {
+                    recognizeBtn.disabled = false;
+                    loader.remove();
+                    buttonIcon.style.display = 'inline-block';
+                    buttonContent.textContent = 'Recognize';
+                }
+            }
+
+            function visualizeNnProcessing() {
+                const createInputToH1Particles = () => {
+                    const inputGridSize = 70;
+                    const inputNeuronSize = inputGridSize / GRID_SIZE;
+                    const h1Neurons = Array.from(nnSvg.querySelectorAll('.nn-neuron')).filter(n => n.cx.baseVal.value === 119);
+                    for (let y = 0; y < GRID_SIZE; y++) {
+                        for (let x = 0; x < GRID_SIZE; x++) {
+                            if (grid[y][x].r > 0) { // If pixel is drawn on
+                                const startX = 10 + (x * inputNeuronSize) + (inputNeuronSize / 2);
+                                const startY = (100 - inputGridSize / 2) + (y * inputNeuronSize) + (inputNeuronSize / 2);
+                                for (let i = 0; i < 2; i++) { // Fire 2 particles per active pixel
+                                    const targetNeuron = h1Neurons[Math.floor(Math.random() * h1Neurons.length)];
+                                    createParticleAnimation(startX, startY, targetNeuron.cx.baseVal.value, targetNeuron.cy.baseVal.value, Math.random() * 400);
+                                }
+                            }
+                        }
+                    }
+                };
+
+                const createInterLayerParticles = (startLayerX, endLayerX) => {
+                    const startNeurons = Array.from(nnSvg.querySelectorAll(`.nn-neuron[cx='${startLayerX}']`));
+                    const endNeurons = Array.from(nnSvg.querySelectorAll(`.nn-neuron[cx='${endLayerX}']`));
+                    startNeurons.forEach(n => {
+                        if (Math.random() > 0.85) { // Activate a random subset of neurons
+                             for (let i = 0; i < 2; i++) {
+                                const targetNeuron = endNeurons[Math.floor(Math.random() * endNeurons.length)];
+                                createParticleAnimation(n.cx.baseVal.value, n.cy.baseVal.value, targetNeuron.cx.baseVal.value, targetNeuron.cy.baseVal.value, Math.random() * 400);
+                             }
+                        }
+                    });
+                };
+                
+                createInputToH1Particles();
+                setTimeout(() => createInterLayerParticles(119, 158), 500);
+                setTimeout(() => createInterLayerParticles(158, 197), 1000);
+                setTimeout(() => createInterLayerParticles(197, 236), 1500);
+                setTimeout(() => createInterLayerParticles(236, 275), 2000);
+                setTimeout(() => createInterLayerParticles(275, 315), 2500);
+            }
+
+            function visualizePrediction(predictedCategory) {
+                const categoryIndex = OBJECT_CATEGORIES.indexOf(predictedCategory);
+                if (categoryIndex > -1) {
+                     document.getElementById(`output-svg-${categoryIndex}`)?.classList.add('active');
+                     document.getElementById(`output-label-${categoryIndex}`)?.classList.add('active');
+                }
+            }
+            
+            clearBtn.addEventListener('click', clearAll);
+            recognizeBtn.addEventListener('click', recognizeAndVisualize);
+            
+            initialize();
+        });
+    </script>
+</body>
+</html>

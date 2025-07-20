@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VizLearn - Learning Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: rgb(16, 24, 39); /* #101827 */
+            color: #f3f4f6; /* Light gray text */
+        }
+        .header {
+            background-color: #1f2937; /* Darker than body for separation */
+            border-bottom-color: #374151;
+        }
+        .card {
+            background-size: cover;
+            background-position: center;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .card .overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 50%);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            display: flex;
+            align-items: flex-end;
+        }
+        .search-bar {
+            background-color: #374151;
+        }
+        .nav-link {
+            color: #9ca3af; /* Lighter gray for inactive links */
+            transition: color 0.2s ease-in-out, border-bottom-color 0.2s ease-in-out;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #ffffff; /* White text on hover/active */
+            border-bottom-color: #8b5cf6; /* Purple accent color */
+        }
+        .footer {
+            background-color: #1f2937;
+            border-top-color: #374151;
+        }
+        .footer-icon {
+            transition: color 0.2s ease-in-out;
+            color: #9ca3af;
+        }
+        .footer-icon:hover {
+            color: #a78bfa; /* Lighter purple on hover */
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Header -->
+    <header class="header p-4 sticky top-0 z-10">
+         <div class="flex justify-center">
+             <div class="flex items-center space-x-6">
+                <div class="text-white text-2xl font-bold flex-shrink-0">
+                    <span>vizlearn</span>
+                </div>
+                <div class="search-bar rounded-full flex items-center w-full max-w-lg px-4 py-2">
+                    <i class="fas fa-search text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="Search courses..." class="bg-transparent text-white placeholder-gray-400 focus:outline-none ml-3 w-full">
+                </div>
+             </div>
+         </div>
+         <!-- Navigation Links in Header -->
+         <nav id="topic-nav" class="mt-4 flex items-center justify-center space-x-4 md:space-x-6 overflow-x-auto pb-2">
+            <a class="nav-link active flex-shrink-0" data-topic="all">Featured</a>
+            <a class="nav-link flex-shrink-0" data-topic="ml">Machine Learning</a>
+            <a class="nav-link flex-shrink-0" data-topic="dl">Deep Learning</a>
+            <a class="nav-link flex-shrink-0" data-topic="gen-ai">Generative AI</a>
+            <a class="nav-link flex-shrink-0" data-topic="cv">Computer Vision</a>
+            <a class="nav-link flex-shrink-0" data-topic="ip">Image Processing</a>
+            <a class="nav-link flex-shrink-0" data-topic="dsa">DSA</a>
+            <a class="nav-link flex-shrink-0" data-topic="nlp">NLP</a>
+        </nav>
+    </header>
+
+    <!-- Learning Rows Container - This will be populated by JavaScript -->
+    <main id="course-container" class="flex-1 p-6"></main>
+    
+    <!-- Footer -->
+    <footer class="footer w-full py-8">
+        <div class="container mx-auto px-6 text-center text-gray-400">
+            <div class="flex justify-center items-center space-x-6 mb-4">
+                <a href="https://www.linkedin.com/in/ashish-jangra/" target="_blank" rel="noopener noreferrer" class="footer-icon">
+                    <i class="fab fa-linkedin fa-2x"></i>
+                </a>
+                <a href="https://github.com/AshishJangra27" target="_blank" rel="noopener noreferrer" class="footer-icon">
+                    <i class="fab fa-github fa-2x"></i>
+                </a>
+                 <a href="https://www.kaggle.com/ashishjangra27" target="_blank" rel="noopener noreferrer" class="footer-icon">
+                    <i class="fab fa-kaggle fa-2x"></i>
+                </a>
+                <a href="https://huggingface.co/ashish-jangra" target="_blank" rel="noopener noreferrer" class="footer-icon">
+                    <!-- Accurate Hugging Face SVG Icon -->
+                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="inline-block">
+                        <path d="M20.24,12.2a8.24,8.24,0,1,1-16.48,0a8.24,8.24,0,0,1,16.48,0Z" fill="currentColor"></path>
+                        <path d="M15.42,16.2c.18-.42.24-.84.18-1.26a4.55,4.55,0,0,0-.54-1.5,4.55,4.55,0,0,0-1.5-.54c-.42-.06-.84.06-1.26.18a4.55,4.55,0,0,0-1.5.54,4.55,4.55,0,0,0-.54,1.5c-.06.42.06.84.18,1.26a4.55,4.55,0,0,0,.54,1.5,4.55,4.55,0,0,0,1.5.54c.42.06.84,0,1.26-.18a4.55,4.55,0,0,0,1.5-.54,4.55,4.55,0,0,0,.54-1.5Z" fill="#101827"></path> <!-- Changed inner fill to match new bg -->
+                        <path d="M10.26,10.26a1.44,1.44,0,1,1-2.88,0,1.44,1.44,0,0,1,2.88,0" fill="#101827"></path> <!-- Changed inner fill to match new bg -->
+                        <path d="M16.62,10.26a1.44,1.44,0,1,1-2.88,0,1.44,1.44,0,0,1,2.88,0" fill="#101827"></path> <!-- Changed inner fill to match new bg -->
+                    </svg>
+                </a>
+                 <a href="https://www.instagram.com/ashish_zangra/" target="_blank" rel="noopener noreferrer" class="footer-icon">
+                    <i class="fab fa-instagram fa-2x"></i>
+                </a>
+            </div>
+            <p>&copy; 2024 vizlearn. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- DATA ---
+            const courseData = {
+                ml: {
+                    title: "Machine Learning",
+                    courses: [
+                        { title: "K-Means Clustering", path: "machine_learning/k-means.html" },
+                        { title: "K-Nearest Neighbors", path: "machine_learning/knn.html" },
+                        { title: "Naive Bayes", path: "machine_learning/naive_bayes.html" },
+                        { title: "Support Vector Machines", path: "machine_learning/svm.html" },
+                        { title: "Cosine Similarity", path: "machine_learning/cosine_similarity.html" }
+                    ]
+                },
+                dl: {
+                    title: "Deep Learning",
+                    courses: [
+                        { title: "Perceptron", path: "deep_learning/perceptron.html" },
+                        { title: "Activation Functions", path: "deep_learning/activation_functions.html" },
+                        { title: "Gradient Descent Data Comparison", path: "deep_learning/gradient_descent_data_comparison.html" },
+                        { title: "Gradient Descent Interactive Learning", path: "deep_learning/gradient_descent_interractive learning.html" }
+                    ]
+                },
+                cv: {
+                    title: "Computer Vision",
+                    courses: [
+                        { title: "Grayscale Image Processing", path: "computer_vision/grayscale_image_processing.html" },
+                        { title: "RGB Image Processing", path: "computer_vision/rgb_image_processing.html" },
+                        { title: "Image Data Augmentation", path: "computer_vision/image_data_augmentation.html" }
+                    ]
+                },
+                dsa: {
+                    title: "Data Structures & Algorithms",
+                    courses: [
+                        { title: "Backtracking", path: "dsa/backtracking.html" }
+                    ]
+                },
+                projects: {
+                    title: "Projects",
+                    courses: [
+                        { title: "MNIST with ANN", path: "projects/mnist_with_ann.html" },
+                        { title: "Object Classification with ANN", path: "projects/object_classification_with_ann.html" }
+                    ]
+                },
+                nlp: {
+                    title: "Natural Language Processing",
+                    courses: [
+                        { title: "Tokenization", path: "nlp/tokenization.html" },
+                        { title: "Word Embeddings", path: "nlp/word_embeddings.html" },
+                        { title: "Transformer Architecture", path: "nlp/transformer_architecture.html" }
+                    ]
+                }
+            };
+
+            // --- ELEMENTS & CONSTANTS ---
+            const topicNav = document.getElementById('topic-nav');
+            const courseContainer = document.getElementById('course-container');
+            const searchInput = document.getElementById('searchInput');
+            const CARDS_PER_ROW = 6;
+
+            // --- RENDER FUNCTION ---
+            function renderCourses() {
+                let html = '';
+                for (const topicKey in courseData) {
+                    const topic = courseData[topicKey];
+                    html += `
+                        <section class="course-section mb-12" data-topic="${topicKey}">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-3xl font-bold text-gray-200">${topic.title}</h2>
+                                <a href="#" class="text-indigo-400 hover:underline view-more-link" data-topic="${topicKey}">View more</a>
+                            </div>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                    `;
+                    topic.courses.forEach(course => {
+                        html += `
+                            <div class="card aspect-[3/4] course-card" style="background-image: url('https://placehold.co/300x400/1f2937/ffffff?text=${encodeURIComponent(course.title)}')">
+                                <a href="${course.path}" class="overlay">
+                                    <h3 class="text-white font-semibold course-title">${course.title}</h3>
+                                </a>
+                            </div>
+                        `;
+                    });
+                    html += `</div></section>`;
+                }
+                courseContainer.innerHTML = html;
+            }
+
+
+            // --- LOGIC ---
+            function updateCardVisibility(section, showAll) {
+                const cards = section.querySelectorAll('.course-card');
+                cards.forEach((card, index) => {
+                    card.style.display = (showAll || index < CARDS_PER_ROW) ? 'block' : 'none';
+                });
+                const viewMoreLink = section.querySelector('.view-more-link');
+                if (viewMoreLink) {
+                    viewMoreLink.style.display = showAll || cards.length <= CARDS_PER_ROW ? 'none' : 'inline';
+                }
+            }
+
+            function filterTopics(selectedTopic) {
+                const allSections = courseContainer.querySelectorAll('.course-section');
+                allSections.forEach(section => {
+                    const sectionTopic = section.dataset.topic;
+                    const isVisible = selectedTopic === 'all' || selectedTopic === sectionTopic;
+                    section.style.display = isVisible ? 'block' : 'none';
+                    if (isVisible) {
+                        updateCardVisibility(section, selectedTopic === sectionTopic);
+                    }
+                });
+                courseContainer.scrollTop = 0;
+            }
+
+            // --- EVENT LISTENERS ---
+            topicNav.addEventListener('click', (e) => {
+                if (e.target.matches('.nav-link')) {
+                    topicNav.querySelector('.active')?.classList.remove('active');
+                    e.target.classList.add('active');
+                    filterTopics(e.target.dataset.topic);
+                }
+            });
+
+            courseContainer.addEventListener('click', (e) => {
+                if (e.target.matches('.view-more-link')) {
+                    e.preventDefault();
+                    const navLink = topicNav.querySelector(`[data-topic="${e.target.dataset.topic}"]`);
+                    navLink?.click();
+                }
+            });
+
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const activeTopic = topicNav.querySelector('.active').dataset.topic;
+                
+                courseContainer.querySelectorAll('.course-section').forEach(section => {
+                    if (activeTopic !== 'all' && section.dataset.topic !== activeTopic) {
+                        section.style.display = 'none';
+                        return;
+                    }
+
+                    let sectionHasVisibleCard = false;
+                    section.querySelectorAll('.course-card').forEach(card => {
+                        const title = card.querySelector('.course-title').textContent.toLowerCase();
+                        const shouldShow = title.includes(searchTerm);
+                        card.style.display = shouldShow ? 'block' : 'none';
+                        if (shouldShow) sectionHasVisibleCard = true;
+                    });
+                    
+                    section.style.display = sectionHasVisibleCard ? 'block' : 'none';
+                });
+            });
+
+            // --- INITIALIZATION ---
+            renderCourses();
+            filterTopics('all');
+        });
+    </script>
+
+</body>
+</html>

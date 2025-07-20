@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformer Architecture Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #101827;
+            --panel-bg: #1f2937;
+            --text-color: #f3f4f6;
+            --border-color: #374151;
+            --accent-color: #8b5cf6;
+            --accent-hover: #a78bfa;
+            --monospace-font: 'Roboto Mono', monospace;
+            --node-color: #60a5fa;
+            --line-color: #9ca3af;
+            --highlight-color: #facc15;
+            --particle-color: #34d399; /* Green for data flow */
+        }
+        body {
+            font-family: var(--monospace-font);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        .panel {
+            background-color: var(--panel-bg);
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-color);
+        }
+        .node {
+            fill: var(--node-color);
+            transition: fill 0.3s ease, stroke 0.3s ease, stroke-width 0.3s ease, transform 0.3s ease;
+            transform-origin: center center; /* For scaling animations */
+        }
+        .node.highlighted {
+            fill: var(--highlight-color);
+            stroke: var(--highlight-color);
+            stroke-width: 2px;
+            transform: scale(1.05);
+        }
+        .flow-line {
+            stroke: var(--line-color);
+            stroke-width: 1.5;
+            fill: none;
+            transition: stroke 0.3s ease, stroke-width 0.3s ease;
+        }
+        .flow-line.highlighted {
+            stroke: var(--highlight-color);
+            stroke-width: 3;
+        }
+        .explanation-step {
+            opacity: 0.5;
+            transition: opacity 0.3s ease, font-weight 0.3s ease, color 0.3s ease;
+        }
+        .explanation-step.active {
+            opacity: 1;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        .scrollable-content {
+            max-height: 400px; /* Adjust as needed */
+            overflow-y: auto;
+        }
+        .data-particle {
+            fill: var(--particle-color);
+            r: 2;
+            visibility: hidden; /* Start hidden */
+        }
+        .token-display-word {
+            font-size: 8px;
+            fill: var(--text-color);
+            text-anchor: middle;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .token-display-word.active {
+            opacity: 1;
+        }
+        .button-group button {
+            padding: 8px 12px;
+            border: 2px solid transparent;
+            background: #374151; /* search-bar color */
+            font-family: inherit;
+            font-size: 0.9em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #9ca3af; /* nav-link color */
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .button-group button:hover:not(:disabled) {
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+        .button-group button.active {
+            color: #ffffff;
+            border-color: var(--accent-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+        .button-group button:disabled {
+            border-color: #374151;
+            color: #4b5563;
+            background-color: #1f2937;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <main class="flex-1 container mx-auto p-4 sm:p-6 lg:p-8 flex flex-col">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl lg:text-4xl font-bold tracking-tight text-white">Transformer Architecture</h1>
+            <p class="mt-2 text-lg text-gray-400">Visualize data flow through a simplified Transformer Encoder.</p>
+        </div>
+
+        <div class="panel p-4 sm:p-6 rounded-lg border flex-grow flex flex-col lg:flex-row gap-6">
+            <!-- Left Panel: Input and Controls -->
+            <div class="flex flex-col w-full lg:w-1/3 flex-shrink-0">
+                <div class="mb-4">
+                    <label for="text-input" class="block text-sm font-medium text-gray-400 mb-2">Sample Text:</label>
+                    <textarea id="text-input" rows="4" class="w-full p-3 bg-gray-800 border border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500" placeholder="Enter text to see data flow...">The quick brown fox jumps over the lazy dog.</textarea>
+                </div>
+                <div class="mb-4 button-group flex justify-center space-x-4">
+                    <button id="next-step-btn">Next Step</button>
+                    <button id="auto-play-btn">Auto Play</button>
+                    <button id="reset-btn">Reset</button>
+                </div>
+                <div class="flex-grow panel p-4 rounded-lg">
+                    <h2 class="text-xl font-bold text-gray-200 mb-4">Data Flow Explanation:</h2>
+                    <div id="explanation-steps" class="space-y-3 text-gray-400 text-sm scrollable-content">
+                        <p id="step-0" class="explanation-step active">Click 'Next Step' to begin the visualization.</p>
+                        <p id="step-1" class="explanation-step"><strong>1. Input Embedding:</strong> Each word (token) is converted into a numerical vector representation. These vectors capture semantic meaning.</p>
+                        <p id="step-2" class="explanation-step"><strong>2. Positional Encoding:</strong> Since Transformers process words in parallel without inherent order, positional information is added to the embeddings. This helps the model understand word order.</p>
+                        <p id="step-3" class="explanation-step"><strong>3. Multi-Head Self-Attention:</strong> This is the core of the Transformer. The model looks at other words in the input sequence to better understand the meaning of each word. It does this multiple times (multi-head) in parallel.</p>
+                        <p id="step-4" class="explanation-step"><strong>4. Add &amp; Normalize (Residual Connection &amp; Layer Norm):</strong> The output of the attention layer is added back to its input (residual connection) to help with training deep networks. Then, Layer Normalization is applied to stabilize the activations.</p>
+                        <p id="step-5" class="explanation-step"><strong>5. Feed-Forward Network:</strong> A simple, position-wise fully connected neural network is applied independently to each position. This allows the model to process each word's representation further.</p>
+                        <p id="step-6" class="explanation-step"><strong>6. Encoder Output:</strong> The processed embeddings from the Encoder are passed to the Decoder (in a full Transformer) or used for downstream tasks.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Transformer Visualization -->
+            <div class="flex-grow w-full lg:w-2/3 panel p-4 rounded-lg flex items-center justify-center relative">
+                <svg id="transformer-svg" viewBox="0 0 600 400" class="w-full h-full">
+                    <!-- Input Embedding -->
+                    <rect id="input-embedding" x="50" y="100" width="50" height="200" class="node" rx="5" ry="5"></rect>
+                    <text x="75" y="315" text-anchor="middle" fill="var(--text-color)" font-size="12">Input Embedding</text>
+                    <g id="input-tokens-group"></g>
+
+                    <!-- Positional Encoding -->
+                    <rect id="positional-encoding" x="120" y="100" width="50" height="200" class="node" rx="5" ry="5"></rect>
+                    <text x="145" y="315" text-anchor="middle" fill="var(--text-color)" font-size="12">Positional Encoding</text>
+
+                    <!-- Encoder Block -->
+                    <rect id="encoder-block-bg" x="200" y="50" width="300" height="300" fill="rgba(139, 92, 246, 0.1)" rx="10" ry="10"></rect>
+                    <text x="350" y="40" text-anchor="middle" fill="var(--text-color)" font-size="14" font-weight="bold">Encoder Block</text>
+
+                    <!-- Multi-Head Attention -->
+                    <rect id="multi-head-attention" x="220" y="80" width="100" height="60" class="node" rx="5" ry="5"></rect>
+                    <text x="270" y="155" text-anchor="middle" fill="var(--text-color)" font-size="10">Multi-Head Attention</text>
+                    <!-- Internal Attention Heads -->
+                    <rect x="225" y="85" width="20" height="10" fill="#4b5563" rx="2" ry="2"></rect>
+                    <rect x="250" y="85" width="20" height="10" fill="#4b5563" rx="2" ry="2"></rect>
+                    <rect x="275" y="85" width="20" height="10" fill="#4b5563" rx="2" ry="2"></rect>
+                    <rect x="300" y="85" width="20" height="10" fill="#4b5563" rx="2" ry="2"></rect>
+
+                    <!-- Add & Norm 1 -->
+                    <rect id="add-norm-1" x="350" y="80" width="50" height="60" class="node" rx="5" ry="5"></rect>
+                    <text x="375" y="155" text-anchor="middle" fill="var(--text-color)" font-size="10">Add &amp; Norm</text>
+
+                    <!-- Feed-Forward -->
+                    <rect id="feed-forward" x="220" y="200" width="100" height="60" class="node" rx="5" ry="5"></rect>
+                    <text x="270" y="275" text-anchor="middle" fill="var(--text-color)" font-size="10">Feed-Forward</text>
+                    <!-- Internal FFN Layers -->
+                    <rect x="225" y="205" width="90" height="10" fill="#4b5563" rx="2" ry="2"></rect>
+                    <rect x="225" y="220" width="90" height="10" fill="#4b5563" rx="2" ry="2"></rect>
+                    <rect x="225" y="235" width="90" height="10" fill="#4b5563" rx="2" ry="2"></rect>
+
+                    <!-- Add & Norm 2 -->
+                    <rect id="add-norm-2" x="350" y="200" width="50" height="60" class="node" rx="5" ry="5"></rect>
+                    <text x="375" y="275" text-anchor="middle" fill="var(--text-color)" font-size="10">Add &amp; Norm</text>
+
+                    <!-- Encoder Output -->
+                    <rect id="encoder-output" x="450" y="100" width="50" height="200" class="node" rx="5" ry="5"></rect>
+                    <text x="475" y="315" text-anchor="middle" fill="var(--text-color)" font-size="12">Encoder Output</text>
+                    <g id="output-tokens-group"></g>
+
+                    <!-- Flow Lines -->
+                    <line id="line-1" x1="100" y1="200" x2="120" y2="200" class="flow-line"></line>
+                    <line id="line-2" x1="170" y1="200" x2="220" y2="200" class="flow-line"></line>
+                    
+                    <!-- Self-Attention Block -->
+                    <line id="line-3" x1="320" y1="110" x2="350" y2="110" class="flow-line"></line>
+                    <line id="line-4" x1="270" y1="200" x2="270" y2="110" class="flow-line"></line> <!-- Residual connection -->
+                    <line id="line-5" x1="375" y1="140" x2="375" y2="200" class="flow-line"></line>
+                    <line id="line-6" x1="375" y1="200" x2="270" y2="200" class="flow-line"></line> <!-- Residual connection -->
+                    
+                    <!-- Feed-Forward Block -->
+                    <line id="line-7" x1="320" y1="230" x2="350" y2="230" class="flow-line"></line>
+                    <line id="line-8" x1="375" y1="260" x2="475" y2="260" class="flow-line"></line>
+
+                    <!-- Particle Layer -->
+                    <g id="particle-layer"></g>
+                </svg>
+            </div>
+        </div>
+    </main>
+
+    <footer class="w-full py-6 mt-8">
+        <div class="container mx-auto px-6 text-center text-gray-400">
+            <div class="flex justify-center items-center space-x-6 mb-4">
+                 <a href="https://www.linkedin.com/in/ashish-jangra/" target="_blank" rel="noopener noreferrer" class="footer-icon"><i class="fab fa-linkedin fa-2x"></i></a>
+                <a href="https://github.com/AshishJangra27" target="_blank" rel="noopener noreferrer" class="footer-icon"><i class="fab fa-github fa-2x"></i></a>
+                 <a href="https://www.kaggle.com/ashishjangra27" target="_blank" rel="noopener noreferrer" class="footer-icon"><i class="fab fa-kaggle fa-2x"></i></a>
+                <a href="https://huggingface.co/ashish-jangra" target="_blank" rel="noopener noreferrer" class="footer-icon">
+                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="inline-block"><path d="M20.24,12.2a8.24,8.24,0,1,1-16.48,0a8.24,8.24,0,0,1,16.48,0Z" fill="currentColor"></path><path d="M15.42,16.2c.18-.42.24-.84.18-1.26a4.55,4.55,0,0,0-.54-1.5,4.55,4.55,0,0,0-1.5-.54c-.42-.06-.84.06-1.26.18a4.55,4.55,0,0,0-1.5.54,4.55,4.55,0,0,0-.54,1.5c-.06.42.06.84.18,1.26a4.55,4.55,0,0,0,.54,1.5,4.55,4.55,0,0,0,1.5.54c.42.06.84,0,1.26-.18a4.55,4.55,0,0,0,1.5-.54,4.55,4.55,0,0,0,.54-1.5Z" fill="#101827"></path><path d="M10.26,10.26a1.44,1.44,0,1,1-2.88,0,1.44,1.44,0,0,1,2.88,0" fill="#101827"></path><path d="M16.62,10.26a1.44,1.44,0,1,1-2.88,0,1.44,1.44,0,0,1,2.88,0" fill="#101827"></path></svg>
+                </a>
+                 <a href="https://www.instagram.com/ashish_zangra/" target="_blank" rel="noopener noreferrer" class="footer-icon"><i class="fab fa-instagram fa-2x"></i></a>
+            </div>
+            <p class="text-xs">&copy; 2024 vizlearn. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const textInput = document.getElementById('text-input');
+            const nextStepBtn = document.getElementById('next-step-btn');
+            const autoPlayBtn = document.getElementById('auto-play-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const explanationSteps = document.querySelectorAll('.explanation-step');
+            const transformerSvg = document.getElementById('transformer-svg');
+            const particleLayer = document.getElementById('particle-layer');
+            const inputTokensGroup = document.getElementById('input-tokens-group');
+            const outputTokensGroup = document.getElementById('output-tokens-group');
+
+            let currentStep = 0;
+            let autoPlayInterval = null;
+            let tokens = [];
+
+            const elementsToHighlight = {
+                0: { nodes: [], lines: [], tokens: 'none', outputTokens: 'none', explanation: 'step-0' },
+                1: { nodes: ['input-embedding'], lines: ['line-1'], tokens: 'input', outputTokens: 'none', explanation: 'step-1' },
+                2: { nodes: ['positional-encoding'], lines: ['line-2'], tokens: 'input', outputTokens: 'none', explanation: 'step-2' },
+                3: { nodes: ['multi-head-attention'], lines: ['line-3', 'line-4'], tokens: 'input', outputTokens: 'none', explanation: 'step-3' },
+                4: { nodes: ['add-norm-1'], lines: ['line-5'], tokens: 'input', outputTokens: 'none', explanation: 'step-4' },
+                5: { nodes: ['feed-forward'], lines: ['line-6', 'line-7'], tokens: 'input', outputTokens: 'none', explanation: 'step-5' },
+                6: { nodes: ['add-norm-2', 'encoder-output'], lines: ['line-8'], tokens: 'none', outputTokens: 'output', explanation: 'step-6' },
+            };
+
+            function tokenizeText(text) {
+                // Simple word tokenization
+                return text.toLowerCase().match(/\b\w+\b/g) || [];
+            }
+
+            function createSvgElement(tag, attributes) {
+                const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+                for (const key in attributes) {
+                    el.setAttribute(key, attributes[key]);
+                }
+                return el;
+            }
+
+            function createParticleAnimation(startX, startY, endX, endY, delay = 0, duration = 1000) {
+                const particle = createSvgElement('circle', { cx: startX, cy: startY, r: 3, class: 'data-particle' });
+                particleLayer.appendChild(particle);
+
+                const animateMotion = createSvgElement('animateMotion', {
+                    path: `M${startX},${startY} L${endX},${endY}`,
+                    dur: `${duration / 1000}s`,
+                    begin: `${delay / 1000}s`,
+                    fill: 'freeze',
+                    calcMode: 'linear'
+                });
+                particle.appendChild(animateMotion);
+
+                // Remove particle after animation
+                setTimeout(() => {
+                    particle.remove();
+                }, delay + duration + 50);
+            }
+
+            function animateDataFlow(step) {
+                // Clear existing particles
+                particleLayer.innerHTML = '';
+
+                const inputRect = document.getElementById('input-embedding').getBoundingClientRect();
+                const positionalRect = document.getElementById('positional-encoding').getBoundingClientRect();
+                const multiHeadRect = document.getElementById('multi-head-attention').getBoundingClientRect();
+                const addNorm1Rect = document.getElementById('add-norm-1').getBoundingClientRect();
+                const feedForwardRect = document.getElementById('feed-forward').getBoundingClientRect();
+                const addNorm2Rect = document.getElementById('add-norm-2').getBoundingClientRect();
+                const encoderOutputRect = document.getElementById('encoder-output').getBoundingClientRect();
+
+                const svgRect = transformerSvg.getBoundingClientRect();
+
+                const getSvgCoords = (rect) => ({
+                    x: rect.left - svgRect.left + rect.width / 2,
+                    y: rect.top - svgRect.top + rect.height / 2
+                });
+
+                const inputCenter = getSvgCoords(inputRect);
+                const positionalCenter = getSvgCoords(positionalRect);
+                const multiHeadCenter = getSvgCoords(multiHeadRect);
+                const addNorm1Center = getSvgCoords(addNorm1Rect);
+                const feedForwardCenter = getSvgCoords(feedForwardRect);
+                const addNorm2Center = getSvgCoords(addNorm2Rect);
+                const encoderOutputCenter = getSvgCoords(encoderOutputRect);
+
+                const numParticles = 10;
+                const particleDuration = 1000;
+
+                switch (step) {
+                    case 1: // Input Embedding
+                        // No particles yet, just tokens appearing
+                        break;
+                    case 2: // Positional Encoding
+                        for (let i = 0; i < numParticles; i++) {
+                            createParticleAnimation(inputCenter.x, inputCenter.y, positionalCenter.x, positionalCenter.y, i * 100, particleDuration);
+                        }
+                        break;
+                    case 3: // Multi-Head Self-Attention
+                        for (let i = 0; i < numParticles; i++) {
+                            createParticleAnimation(positionalCenter.x, positionalCenter.y, multiHeadCenter.x, multiHeadCenter.y, i * 100, particleDuration);
+                        }
+                        break;
+                    case 4: // Add & Normalize 1
+                        for (let i = 0; i < numParticles; i++) {
+                            createParticleAnimation(multiHeadCenter.x, multiHeadCenter.y, addNorm1Center.x, addNorm1Center.y, i * 100, particleDuration);
+                            // Residual connection particles
+                            createParticleAnimation(positionalCenter.x, positionalCenter.y, addNorm1Center.x, addNorm1Center.y, i * 100 + 200, particleDuration);
+                        }
+                        break;
+                    case 5: // Feed-Forward Network
+                        for (let i = 0; i < numParticles; i++) {
+                            createParticleAnimation(addNorm1Center.x, addNorm1Center.y, feedForwardCenter.x, feedForwardCenter.y, i * 100, particleDuration);
+                        }
+                        break;
+                    case 6: // Add & Normalize 2 and Encoder Output
+                        for (let i = 0; i < numParticles; i++) {
+                            createParticleAnimation(feedForwardCenter.x, feedForwardCenter.y, addNorm2Center.x, addNorm2Center.y, i * 100, particleDuration);
+                            // Residual connection particles
+                            createParticleAnimation(addNorm1Center.x, addNorm1Center.y, addNorm2Center.x, addNorm2Center.y, i * 100 + 200, particleDuration);
+                        }
+                        // Particles to final output
+                        for (let i = 0; i < numParticles; i++) {
+                            createParticleAnimation(addNorm2Center.x, addNorm2Center.y, encoderOutputCenter.x, encoderOutputCenter.y, i * 100 + 500, particleDuration);
+                        }
+                        break;
+                }
+            }
+
+            function updateVisualization() {
+                // Reset all highlights
+                transformerSvg.querySelectorAll('.node').forEach(node => node.classList.remove('highlighted'));
+                transformerSvg.querySelectorAll('.flow-line').forEach(line => line.classList.remove('highlighted'));
+                explanationSteps.forEach(step => step.classList.remove('active'));
+                inputTokensGroup.querySelectorAll('.token-display-word').forEach(tokenEl => tokenEl.classList.remove('active'));
+                outputTokensGroup.querySelectorAll('.token-display-word').forEach(tokenEl => tokenEl.classList.remove('active'));
+
+                // Apply highlights for the current step
+                const stepInfo = elementsToHighlight[currentStep];
+                if (stepInfo) {
+                    stepInfo.nodes.forEach(id => {
+                        const node = document.getElementById(id);
+                        if (node) node.classList.add('highlighted');
+                    });
+                    stepInfo.lines.forEach(id => {
+                        const line = document.getElementById(id);
+                        if (line) line.classList.add('highlighted');
+                    });
+
+                    if (stepInfo.tokens === 'input') {
+                        inputTokensGroup.querySelectorAll('.token-display-word').forEach(tokenEl => tokenEl.classList.add('active'));
+                    } else if (stepInfo.outputTokens === 'output') {
+                        outputTokensGroup.querySelectorAll('.token-display-word').forEach(tokenEl => tokenEl.classList.add('active'));
+                    }
+                }
+                
+                const activeExplanation = document.getElementById(stepInfo.explanation);
+                if (activeExplanation) {
+                    activeExplanation.classList.add('active');
+                    activeExplanation.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                animateDataFlow(currentStep);
+            }
+
+            function setupTokensDisplay() {
+                inputTokensGroup.innerHTML = '';
+                outputTokensGroup.innerHTML = '';
+
+                const inputRect = document.getElementById('input-embedding').getBoundingClientRect();
+                const outputRect = document.getElementById('encoder-output').getBoundingClientRect();
+                const svgRect = transformerSvg.getBoundingClientRect();
+
+                const inputX = inputRect.left - svgRect.left + inputRect.width / 2;
+                const inputYStart = inputRect.top - svgRect.top + 20; // Start below top of rect
+                const inputYStep = (inputRect.height - 40) / tokens.length; // Distribute vertically
+
+                const outputX = outputRect.left - svgRect.left + outputRect.width / 2;
+                const outputYStart = outputRect.top - svgRect.top + 20;
+                const outputYStep = (outputRect.height - 40) / tokens.length;
+
+                tokens.forEach((token, index) => {
+                    const inputTokenY = inputYStart + index * inputYStep;
+                    const outputTokenY = outputYStart + index * outputYStep;
+
+                    const inputTokenEl = createSvgElement('text', {
+                        x: inputX,
+                        y: inputTokenY,
+                        'text-anchor': 'middle',
+                        class: 'token-display-word',
+                        textContent: token
+                    });
+                    inputTokensGroup.appendChild(inputTokenEl);
+
+                    const outputTokenEl = createSvgElement('text', {
+                        x: outputX,
+                        y: outputTokenY,
+                        'text-anchor': 'middle',
+                        class: 'token-display-word',
+                        textContent: token // Output tokens are same for simplicity
+                    });
+                    outputTokensGroup.appendChild(outputTokenEl);
+                });
+            }
+
+            function resetApp() {
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+                currentStep = 0;
+                textInput.value = "The quick brown fox jumps over the lazy dog.";
+                tokens = tokenizeText(textInput.value);
+                setupTokensDisplay();
+                updateVisualization();
+                autoPlayBtn.textContent = 'Auto Play';
+                autoPlayBtn.classList.remove('active');
+            }
+
+            function toggleAutoPlay() {
+                if (autoPlayInterval) {
+                    clearInterval(autoPlayInterval);
+                    autoPlayInterval = null;
+                    autoPlayBtn.textContent = 'Auto Play';
+                    autoPlayBtn.classList.remove('active');
+                } else {
+                    autoPlayBtn.textContent = 'Pause';
+                    autoPlayBtn.classList.add('active');
+                    autoPlayInterval = setInterval(() => {
+                        currentStep = (currentStep % (Object.keys(elementsToHighlight).length - 1)) + 1;
+                        updateVisualization();
+                        if (currentStep === Object.keys(elementsToHighlight).length - 1) {
+                            clearInterval(autoPlayInterval);
+                            autoPlayInterval = null;
+                            autoPlayBtn.textContent = 'Auto Play';
+                            autoPlayBtn.classList.remove('active');
+                        }
+                    }, 2500); // Adjust speed as needed
+                }
+            }
+
+            // Event Listeners
+            nextStepBtn.addEventListener('click', () => {
+                clearInterval(autoPlayInterval); // Stop auto-play if manual step is taken
+                autoPlayBtn.textContent = 'Auto Play';
+                autoPlayBtn.classList.remove('active');
+                currentStep = (currentStep % (Object.keys(elementsToHighlight).length - 1)) + 1;
+                updateVisualization();
+            });
+            autoPlayBtn.addEventListener('click', toggleAutoPlay);
+            resetBtn.addEventListener('click', resetApp);
+            textInput.addEventListener('input', () => {
+                tokens = tokenizeText(textInput.value);
+                setupTokensDisplay();
+                resetApp(); // Reset visualization when text changes
+            });
+
+            // Initial setup
+            resetApp();
+        });
+    </script>
+</body>
+</html>
