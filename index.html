@@ -65,6 +65,22 @@
         .footer-icon:hover {
             color: #a78bfa; /* Lighter purple on hover */
         }
+
+        /* Custom Scrollbar Styling */
+        .overflow-x-auto::-webkit-scrollbar {
+            height: 8px;
+        }
+        .overflow-x-auto::-webkit-scrollbar-track {
+            background: #1f2937; /* Same as header/footer background */
+        }
+        .overflow-x-auto::-webkit-scrollbar-thumb {
+            background-color: #4b5563; /* A mid-range gray */
+            border-radius: 4px;
+            border: 2px solid #1f2937; /* Padding around thumb */
+        }
+        .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+            background-color: #6b7280; /* Lighter gray on hover */
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -141,7 +157,9 @@
                         { title: "K-Nearest Neighbors (KNN)", path: "apps/knn.html", img: "imgs/knn.png" },
                         { title: "Naive Bayes", path: "apps/naive_bayes.html", img: "imgs/naive_bayes.png" },
                         { title: "Support Vector Machine (SVM)", path: "apps/svm.html", img: "imgs/svm.png" },
-                        { title: "Cosine Similarity", path: "apps/cosine_similarity.html", img: "imgs/cosine_similarity.png" }
+                        { title: "Cosine Similarity", path: "apps/cosine_similarity.html", img: "imgs/cosine_similarity.png" },
+                        { title: "Bias-Variance Tradeoff", path: "apps/bias_variance_tradeoff.html", img: "imgs/bias_variance_tradeoff.png" },
+                        { title: "Classification Metrics", path: "apps/classification_metrics.html", img: "imgs/classification_metrics.png" }
                     ]
                 },
                 dl: {
