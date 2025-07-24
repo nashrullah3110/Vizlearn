@@ -137,40 +137,45 @@
                 ml: {
                     title: "Machine Learning",
                     courses: [
-                        { title: "K-Means Clustering", path: "apps/k-means.html" },
-                        { title: "K-Nearest Neighbors", path: "apps/knn.html" },
-                        { title: "Naive Bayes", path: "apps/naive_bayes.html" },
-                        { title: "Support Vector Machines", path: "apps/svm.html" },
-                        { title: "Cosine Similarity", path: "apps/cosine_similarity.html" }
+                        { title: "K-Means Clustering", path: "apps/k-means.html", img: "imgs/k-means.png" },
+                        { title: "K-Nearest Neighbors (KNN)", path: "apps/knn.html", img: "imgs/knn.png" },
+                        { title: "Naive Bayes", path: "apps/naive_bayes.html", img: "imgs/naive_bayes.png" },
+                        { title: "Support Vector Machine (SVM)", path: "apps/svm.html", img: "imgs/svm.png" },
+                        { title: "Cosine Similarity", path: "apps/cosine_similarity.html", img: "imgs/cosine_similarity.png" }
                     ]
                 },
                 dl: {
                     title: "Deep Learning",
                     courses: [
-                        { title: "Perceptron", path: "apps/perceptron.html" },
-                        { title: "Activation Functions", path: "apps/activation_functions.html" },
-                        { title: "Gradient Descent Data Comparison", path: "apps/gradient_descent_data_comparison.html" },
-                        { title: "Gradient Descent Interactive Learning", path: "apps/gradient_descent_interractive learning.html" }
+                        { title: "Perceptron", path: "apps/perceptron.html", img: "imgs/perceptron.png" },
+                        { title: "Activation Functions", path: "apps/activation_functions.html", img: "imgs/activation_functions.png" },
+                        { title: "Gradient Descent Data Comparison", path: "apps/gradient_descent_data_comparison.html", img: "imgs/gradient_descent_data_comparison.png" },
+                        { title: "Gradient Descent Interactive Learning", path: "apps/gradient_descent_interactive_learning.html", img: "imgs/gradient_descent_interactive_learning.png" },
+                        { title: "Neural Network", path: "apps/neural_network.html", img: "imgs/neural_network.png" }
                     ]
                 },
                 cv: {
                     title: "Computer Vision",
                     courses: [
-                        { title: "Grayscale Image Processing", path: "apps/grayscale_image_processing.html" },
-                        { title: "RGB Image Processing", path: "apps/rgb_image_processing.html" },
-                        { title: "Image Data Augmentation", path: "apps/image_data_augmentation.html" }
+                        { title: "Grayscale Image Processing", path: "apps/grayscale_image_processing.html", img: "imgs/grayscale_image_processing.png" },
+                        { title: "RGB Image Processing", path: "apps/rgb_image_processing.html", img: "imgs/rgb_image_processing.png" },
+                        { title: "Image Data Augmentation", path: "apps/image_data_augmentation.html", img: "imgs/image_data_augmentation.png" }
                     ]
                 },
                 dsa: {
                     title: "Data Structures & Algorithms",
                     courses: [
-                        { title: "Backtracking", path: "apps/backtracking.html" }
+                        { title: "Backtracking", path: "apps/backtracking.html", img: "imgs/backtracking.png" }
                     ]
+                },
+                "gen-ai": {
+                    title: "Generative AI",
+                    courses: []
                 },
                 nlp: {
                     title: "Natural Language Processing",
                     courses: [
-                        { title: "Tokenization", path: "apps/tokenization.html" }
+                        { title: "Tokenization", path: "apps/tokenization.html", img: "imgs/tokenization.png" }
                     ]
                 }
             };
@@ -179,8 +184,6 @@
             const topicNav = document.getElementById('topic-nav');
             const courseContainer = document.getElementById('course-container');
             const searchInput = document.getElementById('searchInput');
-            const CARDS_PER_ROW = 6;
-
             // --- RENDER FUNCTION ---
             function renderCourses() {
                 let html = '';
@@ -192,14 +195,17 @@
                                 <h2 class="text-3xl font-bold text-gray-200">${topic.title}</h2>
                                 <a href="#" class="text-indigo-400 hover:underline view-more-link" data-topic="${topicKey}">View more</a>
                             </div>
-                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                            <div class="flex flex-nowrap overflow-x-auto space-x-6 pb-4">
                     `;
                     topic.courses.forEach(course => {
                         html += `
-                            <div class="card aspect-[3/4] course-card" style="background-image: url('https://placehold.co/300x400/1f2937/ffffff?text=${encodeURIComponent(course.title)}')">
-                                <a href="${course.path}" class="overlay">
-                                    <h3 class="text-white font-semibold course-title">${course.title}</h3>
+                            <div class="flex-shrink-0 w-80">
+                                <a href="${course.path}">
+                                    <div class="card aspect-[3/2] course-card" style="background-image: url('${course.img}');">
+                                        <div class="overlay"></div>
+                                    </div>
                                 </a>
+                                <h3 class="text-white font-semibold course-title mt-2 text-center">${course.title}</h3>
                             </div>
                         `;
                     });
@@ -210,26 +216,12 @@
 
 
             // --- LOGIC ---
-            function updateCardVisibility(section, showAll) {
-                const cards = section.querySelectorAll('.course-card');
-                cards.forEach((card, index) => {
-                    card.style.display = (showAll || index < CARDS_PER_ROW) ? 'block' : 'none';
-                });
-                const viewMoreLink = section.querySelector('.view-more-link');
-                if (viewMoreLink) {
-                    viewMoreLink.style.display = showAll || cards.length <= CARDS_PER_ROW ? 'none' : 'inline';
-                }
-            }
-
             function filterTopics(selectedTopic) {
                 const allSections = courseContainer.querySelectorAll('.course-section');
                 allSections.forEach(section => {
                     const sectionTopic = section.dataset.topic;
                     const isVisible = selectedTopic === 'all' || selectedTopic === sectionTopic;
                     section.style.display = isVisible ? 'block' : 'none';
-                    if (isVisible) {
-                        updateCardVisibility(section, selectedTopic === sectionTopic);
-                    }
                 });
                 courseContainer.scrollTop = 0;
             }
@@ -262,10 +254,10 @@
                     }
 
                     let sectionHasVisibleCard = false;
-                    section.querySelectorAll('.course-card').forEach(card => {
-                        const title = card.querySelector('.course-title').textContent.toLowerCase();
+                    section.querySelectorAll('.flex-shrink-0.w-80').forEach(cardWrapper => {
+                        const title = cardWrapper.querySelector('.course-title').textContent.toLowerCase();
                         const shouldShow = title.includes(searchTerm);
-                        card.style.display = shouldShow ? 'block' : 'none';
+                        cardWrapper.style.display = shouldShow ? 'block' : 'none';
                         if (shouldShow) sectionHasVisibleCard = true;
                     });
                     
