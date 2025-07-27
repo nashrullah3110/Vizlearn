@@ -32,61 +32,6 @@ Explore a growing library of interactive visualizations:
 *   **Algorithms:**
     *   **Backtracking:** A visualization of the backtracking algorithm solving a maze.
 
-## 🛠️ Built With
-
-*   **Backend:** [Node.js](https://nodejs.org/) with [Express.js](https://expressjs.com/) for serving the applications.
-*   **Frontend:** Vanilla HTML, CSS, and JavaScript.
-*   **Styling:** [TailwindCSS](https://tailwindcss.com/) for rapid and clean UI development.
-*   **Visualization Libraries:**
-    *   [Chart.js](https://www.chartjs.org/) for 2D plotting.
-    *   [Three.js](https://threejs.org/) for 3D visualizations.
-
----
-
-## 🚀 Getting Started
-
-To get a local copy up and running, follow these simple steps.
-
-### Prerequisites
-
-Make sure you have Node.js and npm installed on your machine.
-*   [Node.js](https://nodejs.org/en/download/)
-
-### Installation
-
-1.  **Clone the repository:**
-    ```sh
-    git clone https://github.com/your_username/vizlearn.git
-    ```
-2.  **Navigate to the project directory:**
-    ```sh
-    cd vizlearn
-    ```
-3.  **Install NPM packages:**
-    *(While this project currently has no external npm dependencies, this is good practice for Node.js projects.)*
-    ```sh
-    npm install
-    ```
-
-### Running the Application
-
-1.  **Start the server:**
-    ```sh
-    node index.js
-    ```
-2.  **Open your browser:**
-    Navigate to `http://localhost:3000` to see the main page (currently a placeholder).
-
-## Usage
-
-To view a specific visualization, navigate directly to its HTML file in your browser while the server is running. For example:
-
-*   `http://localhost:3000/perceptron.html`
-*   `http://localhost:3000/svm.html`
-*   `http://localhost:3000/k-means.html`
-
----
-
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
