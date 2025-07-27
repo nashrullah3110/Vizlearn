@@ -104,10 +104,10 @@
             <a class="nav-link flex-shrink-0" data-topic="ml">Machine Learning</a>
             <a class="nav-link flex-shrink-0" data-topic="dl">Deep Learning</a>
             <a class="nav-link flex-shrink-0" data-topic="gen-ai">Generative AI</a>
-            <a class="nav-link flex-shrink-0" data-topic="cv">Computer Vision</a>
-            <a class="nav-link flex-shrink-0" data-topic="ip">Image Processing</a>
+            
             <a class="nav-link flex-shrink-0" data-topic="dsa">DSA</a>
             <a class="nav-link flex-shrink-0" data-topic="nlp">NLP</a>
+            <a class="nav-link flex-shrink-0" data-topic="db">Databases</a>
         </nav>
     </header>
 
@@ -159,7 +159,10 @@
                         { title: "Support Vector Machine (SVM)", path: "apps/svm.html", img: "imgs/svm.png" },
                         { title: "Cosine Similarity", path: "apps/cosine_similarity.html", img: "imgs/cosine_similarity.png" },
                         { title: "Bias-Variance Tradeoff", path: "apps/bias_variance_tradeoff.html", img: "imgs/bias_variance_tradeoff.png" },
-                        { title: "Classification Metrics", path: "apps/classification_metrics.html", img: "imgs/classification_metrics.png" }
+                        { title: "Classification Metrics", path: "apps/classification_metrics.html", img: "imgs/classification_metrics.png" },
+                        { title: "Cross Validation", path: "apps/cross_validation.html", img: "imgs/cross_validation.png" },
+                        { title: "Regression Error Metrics", path: "apps/regression_error_metrics.html", img: "imgs/regression_error_metrics.png" },
+                        { title: "Train Test Split", path: "apps/train_test_split.html", img: "imgs/train_test_split.png" }
                     ]
                 },
                 dl: {
@@ -172,14 +175,6 @@
                         { title: "Neural Network", path: "apps/neural_network.html", img: "imgs/neural_network.png" }
                     ]
                 },
-                cv: {
-                    title: "Computer Vision",
-                    courses: [
-                        { title: "Grayscale Image Processing", path: "apps/grayscale_image_processing.html", img: "imgs/grayscale_image_processing.png" },
-                        { title: "RGB Image Processing", path: "apps/rgb_image_processing.html", img: "imgs/rgb_image_processing.png" },
-                        { title: "Image Data Augmentation", path: "apps/image_data_augmentation.html", img: "imgs/image_data_augmentation.png" }
-                    ]
-                },
                 dsa: {
                     title: "Data Structures & Algorithms",
                     courses: [
@@ -188,12 +183,24 @@
                 },
                 "gen-ai": {
                     title: "Generative AI",
-                    courses: []
+                    courses: [
+                        { title: "Context Length in LLMs", path: "apps/context_length_in_llms.html", img: "imgs/context_length_in_llms.png" }
+                    ]
                 },
                 nlp: {
                     title: "Natural Language Processing",
                     courses: [
-                        { title: "Tokenization", path: "apps/tokenization.html", img: "imgs/tokenization.png" }
+                        { title: "Tokenization", path: "apps/tokenization.html", img: "imgs/tokenization.png" },
+                        { title: "Byte Pair Encoding", path: "apps/bype_pair_encoding.html", img: "imgs/bype_pair_encoding.png" },
+                        { title: "Stemming vs Lemmatization", path: "apps/stemming_vs_lemmatization.html", img: "imgs/stemming_vs_lemmatization.png" }
+                    ]
+                },
+                db: {
+                    title: "Databases",
+                    courses: [
+                        { title: "SQL GroupBy", path: "apps/sql_groupby.html", img: "imgs/sql_groupby.png" },
+                        { title: "SQL Joins", path: "apps/sql_joins.html", img: "imgs/sql_joins.png" },
+                        { title: "SQL Keys", path: "apps/sql_keys.html", img: "imgs/sql_keys.png" }
                     ]
                 }
             };
@@ -202,22 +209,45 @@
             const topicNav = document.getElementById('topic-nav');
             const courseContainer = document.getElementById('course-container');
             const searchInput = document.getElementById('searchInput');
+
             // --- RENDER FUNCTION ---
-            function renderCourses() {
+            function renderCourses(topicKey = 'all') {
                 let html = '';
-                for (const topicKey in courseData) {
+                if (topicKey === 'all') {
+                    for (const key in courseData) {
+                        const topic = courseData[key];
+                        html += `
+                            <section class="course-section mb-12" data-topic="${key}">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h2 class="text-3xl font-bold text-gray-200">${topic.title}</h2>
+                                    <a href="#" class="text-indigo-400 hover:underline view-more-link" data-topic="${key}">View more</a>
+                                </div>
+                                <div class="flex flex-nowrap overflow-x-auto space-x-6 pb-4">
+                        `;
+                        topic.courses.forEach(course => {
+                            html += `
+                                <div class="flex-shrink-0 w-80">
+                                    <a href="${course.path}">
+                                        <div class="card aspect-[3/2] course-card" style="background-image: url('${course.img}');">
+                                            <div class="overlay"></div>
+                                        </div>
+                                    </a>
+                                    <h3 class="text-white font-semibold course-title mt-2 text-center">${course.title}</h3>
+                                </div>
+                            `;
+                        });
+                        html += `</div></section>`;
+                    }
+                } else {
                     const topic = courseData[topicKey];
                     html += `
                         <section class="course-section mb-12" data-topic="${topicKey}">
-                            <div class="flex justify-between items-center mb-6">
-                                <h2 class="text-3xl font-bold text-gray-200">${topic.title}</h2>
-                                <a href="#" class="text-indigo-400 hover:underline view-more-link" data-topic="${topicKey}">View more</a>
-                            </div>
-                            <div class="flex flex-nowrap overflow-x-auto space-x-6 pb-4">
+                            <h2 class="text-3xl font-bold text-gray-200 mb-6">${topic.title}</h2>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     `;
                     topic.courses.forEach(course => {
                         html += `
-                            <div class="flex-shrink-0 w-80">
+                            <div>
                                 <a href="${course.path}">
                                     <div class="card aspect-[3/2] course-card" style="background-image: url('${course.img}');">
                                         <div class="overlay"></div>
@@ -232,15 +262,9 @@
                 courseContainer.innerHTML = html;
             }
 
-
             // --- LOGIC ---
             function filterTopics(selectedTopic) {
-                const allSections = courseContainer.querySelectorAll('.course-section');
-                allSections.forEach(section => {
-                    const sectionTopic = section.dataset.topic;
-                    const isVisible = selectedTopic === 'all' || selectedTopic === sectionTopic;
-                    section.style.display = isVisible ? 'block' : 'none';
-                });
+                renderCourses(selectedTopic);
                 courseContainer.scrollTop = 0;
             }
 
@@ -264,28 +288,30 @@
             searchInput.addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase();
                 const activeTopic = topicNav.querySelector('.active').dataset.topic;
-                
-                courseContainer.querySelectorAll('.course-section').forEach(section => {
-                    if (activeTopic !== 'all' && section.dataset.topic !== activeTopic) {
-                        section.style.display = 'none';
-                        return;
-                    }
 
-                    let sectionHasVisibleCard = false;
-                    section.querySelectorAll('.flex-shrink-0.w-80').forEach(cardWrapper => {
+                if (activeTopic === 'all') {
+                    courseContainer.querySelectorAll('.course-section').forEach(section => {
+                        let sectionHasVisibleCard = false;
+                        section.querySelectorAll('.flex-shrink-0.w-80').forEach(cardWrapper => {
+                            const title = cardWrapper.querySelector('.course-title').textContent.toLowerCase();
+                            const shouldShow = title.includes(searchTerm);
+                            cardWrapper.style.display = shouldShow ? 'block' : 'none';
+                            if (shouldShow) sectionHasVisibleCard = true;
+                        });
+                        section.style.display = sectionHasVisibleCard ? 'block' : 'none';
+                    });
+                } else {
+                    const section = courseContainer.querySelector(`[data-topic='${activeTopic}']`);
+                    section.querySelectorAll('.grid > div').forEach(cardWrapper => {
                         const title = cardWrapper.querySelector('.course-title').textContent.toLowerCase();
                         const shouldShow = title.includes(searchTerm);
                         cardWrapper.style.display = shouldShow ? 'block' : 'none';
-                        if (shouldShow) sectionHasVisibleCard = true;
                     });
-                    
-                    section.style.display = sectionHasVisibleCard ? 'block' : 'none';
-                });
+                }
             });
 
             // --- INITIALIZATION ---
             renderCourses();
-            filterTopics('all');
         });
     </script>
 
