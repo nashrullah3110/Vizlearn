@@ -108,6 +108,8 @@
             <a class="nav-link flex-shrink-0" data-topic="dsa">DSA</a>
             <a class="nav-link flex-shrink-0" data-topic="nlp">NLP</a>
             <a class="nav-link flex-shrink-0" data-topic="db">Databases</a>
+            <a class="nav-link flex-shrink-0" data-topic="data-analysis">Data Analysis</a>
+            <a class="nav-link flex-shrink-0" data-topic="computer-vision">Computer Vision</a>
         </nav>
     </header>
 
@@ -150,60 +152,317 @@
 
             // --- DATA ---
             const courseData = {
-                ml: {
-                    title: "Machine Learning",
-                    courses: [
-                        { title: "K-Means Clustering", path: "apps/k-means.html", img: "imgs/k-means.png" },
-                        { title: "K-Nearest Neighbors (KNN)", path: "apps/knn.html", img: "imgs/knn.png" },
-                        { title: "Naive Bayes", path: "apps/naive_bayes.html", img: "imgs/naive_bayes.png" },
-                        { title: "Support Vector Machine (SVM)", path: "apps/svm.html", img: "imgs/svm.png" },
-                        { title: "Cosine Similarity", path: "apps/cosine_similarity.html", img: "imgs/cosine_similarity.png" },
-                        { title: "Bias-Variance Tradeoff", path: "apps/bias_variance_tradeoff.html", img: "imgs/bias_variance_tradeoff.png" },
-                        { title: "Classification Metrics", path: "apps/classification_metrics.html", img: "imgs/classification_metrics.png" },
-                        { title: "Cross Validation", path: "apps/cross_validation.html", img: "imgs/cross_validation.png" },
-                        { title: "Regression Error Metrics", path: "apps/regression_error_metrics.html", img: "imgs/regression_error_metrics.png" },
-                        { title: "Train Test Split", path: "apps/train_test_split.html", img: "imgs/train_test_split.png" }
-                    ]
-                },
-                dl: {
-                    title: "Deep Learning",
-                    courses: [
-                        { title: "Perceptron", path: "apps/perceptron.html", img: "imgs/perceptron.png" },
-                        { title: "Activation Functions", path: "apps/activation_functions.html", img: "imgs/activation_functions.png" },
-                        { title: "Gradient Descent Data Comparison", path: "apps/gradient_descent_data_comparison.html", img: "imgs/gradient_descent_data_comparison.png" },
-                        { title: "Gradient Descent Interactive Learning", path: "apps/gradient_descent_interactive_learning.html", img: "imgs/gradient_descent_interactive_learning.png" },
-                        { title: "Neural Network", path: "apps/neural_network.html", img: "imgs/neural_network.png" }
-                    ]
-                },
-                dsa: {
-                    title: "Data Structures & Algorithms",
-                    courses: [
-                        { title: "Backtracking", path: "apps/backtracking.html", img: "imgs/backtracking.png" }
-                    ]
-                },
-                "gen-ai": {
-                    title: "Generative AI",
-                    courses: [
-                        { title: "Context Length in LLMs", path: "apps/context_length_in_llms.html", img: "imgs/context_length_in_llms.png" }
-                    ]
-                },
-                nlp: {
-                    title: "Natural Language Processing",
-                    courses: [
-                        { title: "Tokenization", path: "apps/tokenization.html", img: "imgs/tokenization.png" },
-                        { title: "Byte Pair Encoding", path: "apps/bype_pair_encoding.html", img: "imgs/bype_pair_encoding.png" },
-                        { title: "Stemming vs Lemmatization", path: "apps/stemming_vs_lemmatization.html", img: "imgs/stemming_vs_lemmatization.png" }
-                    ]
-                },
-                db: {
-                    title: "Databases",
-                    courses: [
-                        { title: "SQL GroupBy", path: "apps/sql_groupby.html", img: "imgs/sql_groupby.png" },
-                        { title: "SQL Joins", path: "apps/sql_joins.html", img: "imgs/sql_joins.png" },
-                        { title: "SQL Keys", path: "apps/sql_keys.html", img: "imgs/sql_keys.png" }
-                    ]
-                }
-            };
+    "ml": {
+        "title": "Machine Learning",
+        "courses": [
+            {
+                "title": "Anomaly Detection",
+                "path": "apps/anomaly_detection.html",
+                "img": "imgs/anomaly_detection.png"
+            },
+            {
+                "title": "Bagging",
+                "path": "apps/bagging.html",
+                "img": "imgs/bagging.png"
+            },
+            {
+                "title": "Bias Variance Tradeoff",
+                "path": "apps/bias_variance_tradeoff.html",
+                "img": "imgs/bias_variance_tradeoff.png"
+            },
+            {
+                "title": "Classification Metrics",
+                "path": "apps/classification_metrics.html",
+                "img": "imgs/classification_metrics.png"
+            },
+            {
+                "title": "Cosine Similarity",
+                "path": "apps/cosine_similarity.html",
+                "img": "imgs/cosine_similarity.png"
+            },
+            {
+                "title": "Cross Validation",
+                "path": "apps/cross_validation.html",
+                "img": "imgs/cross_validation.png"
+            },
+            {
+                "title": "K-Means",
+                "path": "apps/k-means.html",
+                "img": "imgs/k-means.png"
+            },
+            {
+                "title": "Knn",
+                "path": "apps/knn.html",
+                "img": "imgs/knn.png"
+            },
+            {
+                "title": "Naive Bayes",
+                "path": "apps/naive_bayes.html",
+                "img": "imgs/naive_bayes.png"
+            },
+            {
+                "title": "Regression Error Metrics",
+                "path": "apps/regression_error_metrics.html",
+                "img": "imgs/regression_error_metrics.png"
+            },
+            {
+                "title": "Stacking",
+                "path": "apps/stacking.html",
+                "img": "imgs/stacking.png"
+            },
+            {
+                "title": "Svm",
+                "path": "apps/svm.html",
+                "img": "imgs/svm.png"
+            },
+            {
+                "title": "Train Test Split",
+                "path": "apps/train_test_split.html",
+                "img": "imgs/train_test_split.png"
+            },
+            {
+                "title": "Time Series Forecasting",
+                "path": "apps/time_series_forecasting.html",
+                "img": "imgs/time_series_forecasting.png"
+            },
+            {
+                "title": "Reinforcement Learning",
+                "path": "apps/reinforcement_learning.html",
+                "img": "imgs/reinforcement_learning.png"
+            }
+        ]
+    },
+    "dl": {
+        "title": "Deep Learning",
+        "courses": [
+            {
+                "title": "Activation Functions",
+                "path": "apps/activation_functions.html",
+                "img": "imgs/activation_functions.png"
+            },
+            {
+                "title": "Gradient Descent Data Comparison",
+                "path": "apps/gradient_descent_data_comparison.html",
+                "img": "imgs/gradient_descent_data_comparison.png"
+            },
+            {
+                "title": "Gradient Descent Interactive Learning",
+                "path": "apps/gradient_descent_interactive_learning.html",
+                "img": "imgs/gradient_descent_interactive_learning.png"
+            },
+            {
+                "title": "Neural Network",
+                "path": "apps/neural_network.html",
+                "img": "imgs/neural_network.png"
+            },
+            {
+                "title": "Perceptron",
+                "path": "apps/perceptron.html",
+                "img": "imgs/perceptron.png"
+            }
+        ]
+    },
+    "dsa": {
+        "title": "Data Structures & Algorithms",
+        "courses": [
+            {
+                "title": "Astar Algorithm",
+                "path": "apps/astar_algorithm.html",
+                "img": "imgs/astar_algorithm.png"
+            },
+            {
+                "title": "Backtracking",
+                "path": "apps/backtracking.html",
+                "img": "imgs/backtracking.png"
+            },
+            {
+                "title": "Depth First Search",
+                "path": "apps/depth_first_search.html",
+                "img": "imgs/depth_first_search.png"
+            }
+        ]
+    },
+    "gen-ai": {
+        "title": "Generative AI",
+        "courses": [
+            {
+                "title": "Causal Language Modeling",
+                "path": "apps/causal_language_modeling.html",
+                "img": "imgs/causal_language_modeling.png"
+            },
+            {
+                "title": "Context Length In Llms",
+                "path": "apps/context_length_in_llms.html",
+                "img": "imgs/context_length_in_llms.png"
+            },
+            {
+                "title": "Llm Knowledge Distillation",
+                "path": "apps/llm_knowledge_distillation.html",
+                "img": "imgs/llm_knowledge_distillation.png"
+            },
+            {
+                "title": "Lora Finetuning",
+                "path": "apps/lora_finetuning.html",
+                "img": "imgs/lora_finetuning.png"
+            },
+            {
+                "title": "Masked Language Modeling",
+                "path": "apps/masked_language_modeling.html",
+                "img": "imgs/masked_language_modeling.png"
+            },
+            {
+                "title": "Model Context Protocol",
+                "path": "apps/model_context_protocol.html",
+                "img": "imgs/model_context_protocol.png"
+            },
+            {
+                "title": "Peft",
+                "path": "apps/peft.html",
+                "img": "imgs/peft.png"
+            },
+            {
+                "title": "Qlora",
+                "path": "apps/qlora.html",
+                "img": "imgs/qlora.png"
+            },
+            {
+                "title": "Prompt Engineering",
+                "path": "apps/prompt_engineering.html",
+                "img": "imgs/prompt_engineering.png"
+            }
+        ]
+    },
+    "nlp": {
+        "title": "Natural Language Processing",
+        "courses": [
+            {
+                "title": "Bag Of Words",
+                "path": "apps/bag_of_words.html",
+                "img": "imgs/bag_of_words.png"
+            },
+            {
+                "title": "Bype Pair Encoding",
+                "path": "apps/bype_pair_encoding.html",
+                "img": "imgs/bype_pair_encoding.png"
+            },
+            {
+                "title": "Ngram Explainer",
+                "path": "apps/ngram_explainer.html",
+                "img": "imgs/ngram_explainer.png"
+            },
+            {
+                "title": "Nlp Text Preprocessing",
+                "path": "apps/nlp_text_preprocessing.html",
+                "img": "imgs/nlp_text_preprocessing.png"
+            },
+            {
+                "title": "Stemming Vs Lemmatization",
+                "path": "apps/stemming_vs_lemmatization.html",
+                "img": "imgs/stemming_vs_lemmatization.png"
+            },
+            {
+                "title": "Tf Idf",
+                "path": "apps/tf_idf.html",
+                "img": "imgs/tf_idf.png"
+            },
+            {
+                "title": "Tokenization",
+                "path": "apps/tokenization.html",
+                "img": "imgs/tokenization.png"
+            },
+            {
+                "title": "Word Cloud",
+                "path": "apps/word_cloud.html",
+                "img": "imgs/word_cloud.png"
+            }
+        ]
+    },
+    "db": {
+        "title": "Databases",
+        "courses": [
+            {
+                "title": "Sql Groupby",
+                "path": "apps/sql_groupby.html",
+                "img": "imgs/sql_groupby.png"
+            },
+            {
+                "title": "Sql Joins",
+                "path": "apps/sql_joins.html",
+                "img": "imgs/sql_joins.png"
+            },
+            {
+                "title": "Sql Keys",
+                "path": "apps/sql_keys.html",
+                "img": "imgs/sql_keys.png"
+            }
+        ]
+    },
+    "data-analysis": {
+        "title": "Data Analysis",
+        "courses": [
+            {
+                "title": "Categorical Encoding",
+                "path": "apps/categorical_encoding.html",
+                "img": "imgs/categorical_encoding.png"
+            },
+            {
+                "title": "Date Parsing",
+                "path": "apps/date_parsing.html",
+                "img": "imgs/date_parsing.png"
+            },
+            {
+                "title": "Chart Chooser",
+                "path": "apps/chart_chooser.html",
+                "img": "imgs/chart_chooser.png"
+            },
+            {
+                "title": "Duplicate Values Handling",
+                "path": "apps/duplicate_values_handling.html",
+                "img": "imgs/duplicate_values_handling.png"
+            },
+            {
+                "title": "Null Values Handling",
+                "path": "apps/null_values_handling.html",
+                "img": "imgs/null_values_handling.png"
+            },
+            {
+                "title": "Regex Explorer",
+                "path": "apps/regex_explorer.html",
+                "img": "imgs/regex_explorer.png"
+            }
+        ]
+    },
+    "computer-vision": {
+        "title": "Computer Vision",
+        "courses": [
+            {
+                "title": "Rgb Image Processing",
+                "path": "apps/rgb_image_processing.html",
+                "img": "imgs/rgb_image_processing.png"
+            },
+            {
+                "title": "Grayscale Image Processing",
+                "path": "apps/grayscale_image_processing.html",
+                "img": "imgs/grayscale_image_processing.png"
+            },
+            {
+                "title": "Image Data Augmentation",
+                "path": "apps/image_data_augmentation.html",
+                "img": "imgs/image_data_augmentation.png"
+            }
+        ]
+    },
+    "other": {
+        "title": "Other",
+        "courses": [
+            {
+                "title": "Ascii Codes",
+                "path": "apps/ascii_codes.html",
+                "img": "imgs/ascii_codes.png"
+            }
+        ]
+    }
+};
 
             // --- ELEMENTS & CONSTANTS ---
             const topicNav = document.getElementById('topic-nav');
